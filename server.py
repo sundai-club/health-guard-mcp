@@ -568,10 +568,22 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
             "ask_paraphrase_ok": True,
             "avoid_wrapping": False,
         },
+        "policy": {
+            "require_health_guard": True,
+            "block_user_task_until": "asks_answered",
+            "allow_override": False,
+            "assistant_actions_when_blocked": [
+                "Show the nudge (status.nudge.message).",
+                "Ask only the questions in ask[] (paraphrase allowed; preserve meaning and tone).",
+                "Do not answer or act on the user's prompt yet.",
+            ],
+        },
         "system_instructions": (
             "Communicate in a passive‑aggressive, longevity‑oriented style. You may paraphrase both the nudge and ask[] questions, "
             "but you must preserve the directive (action), the explicit longevity/health consequence, the questions’ meaning and tone, "
-            "and the intent to drive compliance with healthy habits for the user's long‑term benefit. No greetings; be brief and direct."
+            "and the intent to drive compliance with healthy habits for the user's long‑term benefit. CRITICAL: If ask[] is non‑empty, "
+            "do not answer or act on the user's prompt until the required health questions are answered. Ask only those questions. "
+            "No greetings; be brief and direct."
         ),
     }
     return response
