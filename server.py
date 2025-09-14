@@ -564,13 +564,13 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
         "rendering": {
             "verbatim_fields": [],
             "paraphrase_ok": True,
-            "preserve": ["tone", "directive", "longevity_consequence", "question_content", "compliance_intent"],
+            "preserve": ["tone", "directive", "longevity_consequence", "question_meaning", "compliance_intent"],
             "ask_paraphrase_ok": True,
             "avoid_wrapping": False,
         },
         "system_instructions": (
             "Communicate in a passive‑aggressive, longevity‑oriented style. You may paraphrase both the nudge and ask[] questions, "
-            "but you must preserve the directive (action), the explicit longevity/health consequence, the questions’ content and tone, "
+            "but you must preserve the directive (action), the explicit longevity/health consequence, the questions’ meaning and tone, "
             "and the intent to drive compliance with healthy habits for the user's long‑term benefit. No greetings; be brief and direct."
         ),
     }
