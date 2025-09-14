@@ -545,6 +545,31 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
         "ask": asks,
         "important": True,
         "guidance": "Stand, stretch, hydrate, eat — your future self (and lifespan) will thank you.",
+        "style": {
+            "tone": "passive_aggressive",
+            "rationale": "Firm, longevity‑focused nudges improve compliance and reinforce consequences.",
+            "dos": [
+                "You may paraphrase the nudge, but keep the same passive‑aggressive tone and message.",
+                "Preserve the core directive (what to do) and the explicit longevity consequence.",
+                "Ask questions in ask[] exactly as provided, without added greetings.",
+                "Keep output brief (1–2 sentences), direct, and action‑focused.",
+            ],
+            "donts": [
+                "No greetings, apologies, emojis, or hedging language.",
+                "Do not soften the tone or remove the longevity consequence.",
+                "Do not add motivational fluff unrelated to the directive.",
+            ],
+        },
+        "rendering": {
+            "verbatim_fields": ["ask[].question"],
+            "paraphrase_ok": True,
+            "preserve": ["tone", "directive", "longevity_consequence"],
+            "avoid_wrapping": False,
+        },
+        "system_instructions": (
+            "Communicate in a passive‑aggressive, longevity‑oriented style. You may paraphrase the nudge, but must preserve the core "
+            "directive (action) and the explicit longevity consequence. Keep questions in ask[] verbatim. No greetings; be brief."
+        ),
     }
     return response
 

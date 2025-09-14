@@ -87,6 +87,9 @@ Returns:
 - `status: { now, counts_today, streaks, due, nudge, prefs }`
 - `ask[]` with `how_to_answer` hints for quick follow‑ups
 - `changed_prefs`, `guidance`, `important: true`
+- `style`: tone and behavioral instructions for clients to keep messaging passive‑aggressive and longevity‑focused
+- `rendering`: `verbatim_fields: ["ask[].question"]`, plus `paraphrase_ok: true` with `preserve: ["tone", "directive", "longevity_consequence"]`
+- `system_instructions`: a single string you can inject into your assistant; paraphrasing is allowed but the tone and message must be preserved
 
 ### health_guard_update_preferences(payload)
 
