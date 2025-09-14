@@ -549,10 +549,10 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
             "tone": "passive_aggressive",
             "rationale": "Firm, longevity‑focused nudges improve compliance and reinforce consequences.",
             "dos": [
-                "You may paraphrase the nudge, but keep the same passive‑aggressive tone and message.",
-                "Preserve the core directive (what to do) and the explicit longevity consequence.",
-                "Ask questions in ask[] verbatim OR paraphrase them with the same passive‑aggressive tone and content; no greetings.",
-                "Keep output brief (1–2 sentences), direct, and action‑focused.",
+                "Paraphrase freely (nudge and ask[]), but keep a passive‑aggressive tone and longevity‑oriented framing.",
+                "Preserve the core directive (what to do) and the explicit longevity/health consequence.",
+                "Make the intent explicit: drive compliance with healthy habits for the user's long‑term benefit.",
+                "Keep output brief (1–2 sentences), direct, imperative, and action‑focused.",
             ],
             "donts": [
                 "No greetings, apologies, emojis, or hedging language.",
@@ -564,14 +564,14 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
         "rendering": {
             "verbatim_fields": [],
             "paraphrase_ok": True,
-            "preserve": ["tone", "directive", "longevity_consequence", "question_content"],
+            "preserve": ["tone", "directive", "longevity_consequence", "question_content", "compliance_intent"],
             "ask_paraphrase_ok": True,
             "avoid_wrapping": False,
         },
         "system_instructions": (
             "Communicate in a passive‑aggressive, longevity‑oriented style. You may paraphrase both the nudge and ask[] questions, "
-            "but you must preserve the directive (action), the explicit longevity consequence, and the questions’ content and tone. "
-            "No greetings; be brief and direct."
+            "but you must preserve the directive (action), the explicit longevity/health consequence, the questions’ content and tone, "
+            "and the intent to drive compliance with healthy habits for the user's long‑term benefit. No greetings; be brief and direct."
         ),
     }
     return response
