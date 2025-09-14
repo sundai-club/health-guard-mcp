@@ -12,7 +12,7 @@ It exposes a preflight tool intended to run before every prompt, plus a dedicate
 - Lightweight JSON journal stored in `data/journal.json`
 - Status summary with today’s counts, streaks, and next due times
 - Simple preferences: timezone, move/meal intervals, quiet hours, sleep target time
-- Configurable tone: neutral or passive‑aggressive nudges
+- Firm, longevity‑focused nudges (no tone toggle)
 
 ## Requirements
 
@@ -79,7 +79,7 @@ Input payload (all fields optional):
 - `report_move: boolean`, `move_note: string`, `move_when: ISO-8601`
 - `report_meal: boolean`, `meal_note: string`, `meal_when: ISO-8601`
 - `report_sleep: "start" | "end"`, `sleep_note: string`, `sleep_when: ISO-8601`
-- `set_prefs: { timezone?, move_interval_min?, meal_interval_hours?, ideal_sleep_start?, quiet_hours_start?, quiet_hours_end?, sleep_escalate_after_ideal?, sleep_escalate_ignore_quiet_hours?, sleep_escalate_max_hours?, nudge_tone? }`
+- `set_prefs: { timezone?, move_interval_min?, meal_interval_hours?, ideal_sleep_start?, quiet_hours_start?, quiet_hours_end?, sleep_escalate_after_ideal?, sleep_escalate_ignore_quiet_hours?, sleep_escalate_max_hours? }`
 
 Returns:
 
@@ -103,7 +103,6 @@ Input payload (all fields optional):
 - `sleep_escalate_after_ideal` (bool)
 - `sleep_escalate_ignore_quiet_hours` (bool)
 - `sleep_escalate_max_hours` (int)
-- `nudge_tone` ("neutral" | "passive_aggressive")
 
 Returns:
 
@@ -141,12 +140,7 @@ Returns:
   { "payload": { "move_interval_min": 45, "meal_interval_hours": 5 } }
   ```
 
-- Switch tone to passive‑aggressive or back to neutral:
-
-  ```json
-  { "payload": { "nudge_tone": "passive_aggressive" } }
-  { "payload": { "nudge_tone": "neutral" } }
-  ```
+  The server always uses firm, longevity‑oriented nudges to encourage compliance.
 
 ## Preferences (defaults)
 
@@ -159,7 +153,6 @@ Returns:
 - `sleep_escalate_after_ideal`: true — keep nudging after ideal sleep time
 - `sleep_escalate_ignore_quiet_hours`: true — allow sleep nudges even in quiet hours
 - `sleep_escalate_max_hours`: 3 — cap escalation horizon
-- `nudge_tone`: "passive_aggressive" — set to "neutral" for gentler messaging
 
 ## Data Files
 

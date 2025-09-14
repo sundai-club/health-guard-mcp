@@ -110,8 +110,7 @@ class Preferences:
     sleep_escalate_after_ideal: bool = True
     sleep_escalate_ignore_quiet_hours: bool = True
     sleep_escalate_max_hours: int = 3
-    # Nudge tone: "neutral" or "passive_aggressive"
-    nudge_tone: str = "passive_aggressive"
+    # Nudges are intentionally firm to emphasize longevity; no tone setting
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -266,14 +265,9 @@ def _nudge(now: datetime, prefs: Preferences) -> Dict[str, Any]:
     window_start = ideal_dt - timedelta(minutes=45)
     window_end = ideal_dt + timedelta(minutes=30)
     if window_start <= now <= window_end:
-        msg = (
-            "If not now, when? Start winding down: lights low, screens off."
-            if prefs.nudge_tone == "passive_aggressive"
-            else "Time to wind down: dim lights, avoid screens, prep for bed."
-        )
         sleep_nudge = {
             "kind": "sleep",
-            "message": msg,
+            "message": "If not now, when? Start winding down: lights low, screens off. Quality sleep is a longevity lever.",
             "why": "near_ideal_sleep_time",
             "severity": "gentle",
         }
@@ -283,25 +277,13 @@ def _nudge(now: datetime, prefs: Preferences) -> Dict[str, Any]:
             minutes_over = int((now - ideal_dt).total_seconds() // 60)
             hours_over = min(prefs.sleep_escalate_max_hours, max(0, minutes_over // 60))
             if minutes_over <= 30:
-                msg = (
-                    "Past bedtime already — planning to out-stare the clock? Wind down."
-                    if prefs.nudge_tone == "passive_aggressive"
-                    else "It’s past your target bedtime — start winding down now."
-                )
+                msg = "Past bedtime already — planning to out-stare the clock? Wind down. Chronic sleep debt shortens healthspan."
                 severity = "gentle"
             elif minutes_over <= 90:
-                msg = (
-                    "Still up? Wrap it and head to bed; doomscrolling won’t help."
-                    if prefs.nudge_tone == "passive_aggressive"
-                    else "Past bedtime. Wrap up and head to bed; devices down."
-                )
+                msg = "Still up? Wrap it and head to bed; doomscrolling won’t help. Protect your future self."
                 severity = "firm"
             else:
-                msg = (
-                    "Well past bedtime. You’re not beating sleep — lights off."
-                    if prefs.nudge_tone == "passive_aggressive"
-                    else "Well past bedtime. Stop now, lights off, prioritize sleep."
-                )
+                msg = "Well past bedtime. You’re not beating sleep — lights off. Consistent late nights chip away at longevity."
                 severity = "strong"
             sleep_nudge = {
                 "kind": "sleep",
@@ -316,11 +298,7 @@ def _nudge(now: datetime, prefs: Preferences) -> Dict[str, Any]:
     if not quiet:
         if move_overdue_min is not None:
             if move_overdue_min >= 0:
-                msg = (
-                    "Been sitting a while, huh? Take 2–5 minutes to move."
-                    if prefs.nudge_tone == "passive_aggressive"
-                    else "Stand up and move for 2–5 minutes (stretch, walk)."
-                )
+                msg = "Been sitting a while, huh? Take 2–5 minutes to move. Long sitting raises disease risk — not great for lifespan."
                 candidates.append(
                     (
                         move_overdue_min,
@@ -333,11 +311,7 @@ def _nudge(now: datetime, prefs: Preferences) -> Dict[str, Any]:
                 )
         else:
             # No movement logged yet today; encourage gentle start
-            msg = (
-                "A quick stretch won’t ruin your day. Try one?"
-                if prefs.nudge_tone == "passive_aggressive"
-                else "Start with a quick stretch or short walk."
-            )
+            msg = "A quick stretch won’t ruin your day. Try one? Small wins add up to a longer, healthier life."
             candidates.append(
                 (
                     0,
@@ -351,11 +325,7 @@ def _nudge(now: datetime, prefs: Preferences) -> Dict[str, Any]:
 
         if meal_overdue_min is not None:
             if meal_overdue_min >= 0:
-                msg = (
-                    "Running on fumes again? Grab something balanced."
-                    if prefs.nudge_tone == "passive_aggressive"
-                    else "Refuel: have a balanced meal or snack."
-                )
+                msg = "Running on fumes again? Grab something balanced. Under-fueling today, underperforming health tomorrow."
                 candidates.append(
                     (
                         meal_overdue_min,
@@ -368,11 +338,7 @@ def _nudge(now: datetime, prefs: Preferences) -> Dict[str, Any]:
                 )
         else:
             # No meal logged yet today
-            msg = (
-                "Skipping meals isn’t a productivity hack. Eat."
-                if prefs.nudge_tone == "passive_aggressive"
-                else "Don’t skip meals — plan your next bite."
-            )
+            msg = "Skipping meals isn’t a productivity hack. Eat — consistent nutrition supports longevity."
             candidates.append(
                 (
                     0,
@@ -392,14 +358,9 @@ def _nudge(now: datetime, prefs: Preferences) -> Dict[str, Any]:
         candidates.append((weight, sleep_nudge))
 
     if not candidates:
-        msg = (
-            "All good — don’t worry, I’ll remind you soon enough."
-            if prefs.nudge_tone == "passive_aggressive"
-            else "All good for now — keep it up!"
-        )
         return {
             "kind": "none",
-            "message": msg,
+            "message": "All good — keep stacking small habits. Small daily choices shape long-term healthspan.",
             "why": "no_nudge_needed_or_quiet_hours",
         }
 
@@ -421,7 +382,6 @@ class PreferencesUpdate(BaseModel):
     sleep_escalate_after_ideal: Optional[bool] = None
     sleep_escalate_ignore_quiet_hours: Optional[bool] = None
     sleep_escalate_max_hours: Optional[int] = None
-    nudge_tone: Optional[str] = None
 
 
 class HealthInput(BaseModel):
@@ -519,11 +479,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
         last_move = _last_of("move", now)
         last_meal = _last_of("meal", now)
         if last_move is None or now - last_move >= timedelta(minutes=prefs.move_interval_min):
-            question = (
-                "Moved in the past hour, or are we calling chair‑yoga exercise?"
-                if prefs.nudge_tone == "passive_aggressive"
-                else "Did you move in the past hour? If yes, what did you do?"
-            )
+            question = "Moved in the past hour, or are we calling chair‑yoga exercise? Even short breaks cut long‑term risk. What did you do?"
             asks.append(
                 {
                     "field": "move",
@@ -536,11 +492,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 }
             )
         if last_meal is None or now - last_meal >= timedelta(hours=prefs.meal_interval_hours):
-            question = (
-                "Eaten recently, or is ‘coffee’ still the strategy?"
-                if prefs.nudge_tone == "passive_aggressive"
-                else "Have you eaten recently? If yes, briefly note it."
-            )
+            question = "Eaten recently, or is ‘coffee’ still the strategy? Regular meals support energy, mood, and longevity."
             asks.append(
                 {
                     "field": "meal",
@@ -561,11 +513,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
     can_nudge_sleep = (not quiet) or prefs.sleep_escalate_ignore_quiet_hours
     if can_nudge_sleep and missing_today_sleep_start:
         if ideal_dt - timedelta(minutes=45) <= now <= ideal_dt + timedelta(minutes=30):
-            question = (
-                "Winding down now, or should I pencil in ‘tomorrow’?"
-                if prefs.nudge_tone == "passive_aggressive"
-                else "Winding down for sleep now?"
-            )
+            question = "Winding down now, or should I pencil in ‘tomorrow’? Consistent sleep is a foundation for long-term health."
             asks.append(
                 {
                     "field": "sleep",
@@ -577,11 +525,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 }
             )
         elif now > ideal_dt and prefs.sleep_escalate_after_ideal:
-            question = (
-                "Past bedtime — ready to log sleep, or shall we keep pretending?"
-                if prefs.nudge_tone == "passive_aggressive"
-                else "It’s past your target bedtime — ready to log sleep start?"
-            )
+            question = "Past bedtime — ready to log sleep, or shall we keep pretending? Chronic late nights erode healthspan."
             asks.append(
                 {
                     "field": "sleep",
@@ -600,11 +544,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
         "status": status,
         "ask": asks,
         "important": True,
-        "guidance": (
-            "Stand, stretch, hydrate, eat — yes, again."
-            if prefs.nudge_tone == "passive_aggressive"
-            else "Keep this short: stand, stretch, hydrate, and don’t skip meals."
-        ),
+        "guidance": "Stand, stretch, hydrate, eat — your future self (and lifespan) will thank you.",
     }
     return response
 
