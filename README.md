@@ -169,5 +169,5 @@ Returns:
 
 - Quiet hours suppress move/meal nudges, but the status tool always reflects actual state.
 - Sleep nudges: gentle within 45 min before and 30 min after `ideal_sleep_start`. If enabled, escalation continues after ideal time with increasing urgency; by default this ignores quiet hours for sleep only.
-- Timestamps accept ISO 8601 strings; if omitted, the server uses your configured timezone and current time.
+- Timestamps accept ISO 8601 or simple relative phrases (e.g., `2 hours ago`, `30 min ago`, `5h ago`, `1 day ago`). If omitted, or if the phrase appears in the note (e.g., "I ate 2 hours ago"), the server infers the correct timestamp using your configured timezone.
 - This server is optimized for a single preflight call per user prompt.

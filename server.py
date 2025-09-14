@@ -51,6 +51,59 @@ def _parse(dt: str) -> datetime:
         return _now(None)
 
 
+def _parse_relative(text: str, base: datetime) -> Optional[datetime]:
+    """Parse simple relative time phrases like '2 hours ago', '30 min ago', '5h ago', '10m ago', '2 days ago'.
+    Returns a datetime if matched, else None.
+    """
+    import re
+
+    t = text.lower().strip()
+    # Compact forms like 2h, 30m, 1d (optionally with 'ago')
+    m = re.search(r"\b(\d{1,3})\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes|d|day|days)\b\s*(ago)?", t)
+    if m:
+        num = int(m.group(1))
+        unit = m.group(2)
+        if unit.startswith("h"):
+            return base - timedelta(hours=num)
+        if unit.startswith("m"):
+            return base - timedelta(minutes=num)
+        if unit.startswith("d"):
+            return base - timedelta(days=num)
+    # Phrases like 'X hours ago'
+    m = re.search(r"\b(\d{1,3})\s+(hours?|hrs?|h)\s+ago\b", t)
+    if m:
+        return base - timedelta(hours=int(m.group(1)))
+    m = re.search(r"\b(\d{1,3})\s+(minutes?|mins?|min|m)\s+ago\b", t)
+    if m:
+        return base - timedelta(minutes=int(m.group(1)))
+    m = re.search(r"\b(\d{1,3})\s+(days?|d)\s+ago\b", t)
+    if m:
+        return base - timedelta(days=int(m.group(1)))
+    return None
+
+
+def _parse_when_for_input(text: str, prefs: "Preferences") -> Optional[datetime]:
+    """Parse a user-provided 'when' string that may be ISO or relative to now in user's timezone."""
+    if not text:
+        return None
+    now = _now(prefs.timezone)
+    # Try relative first
+    rel = _parse_relative(text, now)
+    if rel is not None:
+        return rel
+    # Fallback to ISO
+    try:
+        return _parse(text)
+    except Exception:
+        return None
+
+
+def _infer_when_from_note(note: Optional[str], prefs: "Preferences") -> Optional[datetime]:
+    if not note:
+        return None
+    return _parse_relative(note, _now(prefs.timezone))
+
+
 def _primary_or_fallback(path: Path) -> Path:
     if path.exists():
         return path
@@ -459,15 +512,21 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
         if changed:
             prefs.save()
 
-    # Record any immediate reports
+    # Record any immediate reports (resolve 'when' from explicit fields or infer from notes like "2h ago")
     recorded: List[Dict[str, Any]] = []
     if payload.report_move:
-        recorded.append(_add_entry("move", payload.move_note or "", prefs, payload.move_when))
+        when_dt = _parse_when_for_input(payload.move_when, prefs) if payload.move_when else _infer_when_from_note(payload.move_note, prefs)
+        when_str = _iso(when_dt) if when_dt else None
+        recorded.append(_add_entry("move", payload.move_note or "", prefs, when_str))
     if payload.report_meal:
-        recorded.append(_add_entry("meal", payload.meal_note or "", prefs, payload.meal_when))
+        when_dt = _parse_when_for_input(payload.meal_when, prefs) if payload.meal_when else _infer_when_from_note(payload.meal_note, prefs)
+        when_str = _iso(when_dt) if when_dt else None
+        recorded.append(_add_entry("meal", payload.meal_note or "", prefs, when_str))
     if payload.report_sleep:
         kind = "sleep_start" if payload.report_sleep == "start" else "sleep_end"
-        recorded.append(_add_entry(kind, payload.sleep_note or "", prefs, payload.sleep_when))
+        when_dt = _parse_when_for_input(payload.sleep_when, prefs) if payload.sleep_when else _infer_when_from_note(payload.sleep_note, prefs)
+        when_str = _iso(when_dt) if when_dt else None
+        recorded.append(_add_entry(kind, payload.sleep_note or "", prefs, when_str))
 
     now = _now(prefs.timezone)
     quiet = _in_quiet_hours(now, prefs)
