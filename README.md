@@ -86,9 +86,11 @@ Returns:
 - `ok, recorded[]`
 - `status: { now, counts_today, streaks, due, nudge, prefs }`
 - `ask[]` with `how_to_answer` hints for quick follow‑ups
+  - Each ask also includes `intent`, `meaning`, and `talking_points` to guide paraphrasing while preserving tone/meaning
 - `changed_prefs`, `guidance`, `important: true`
 - `style`: tone and behavioral instructions for clients to keep messaging passive‑aggressive and longevity‑focused
-- `rendering`: `paraphrase_ok: true`, `ask_paraphrase_ok: true`, and `preserve: ["tone", "directive", "longevity_consequence", "question_meaning"]`
+- `rendering`: `paraphrase_ok: true`, `ask_paraphrase_ok: true`, `ask_paraphrase_required: true`,
+  `avoid_repeating_server_text: true`, and `preserve: ["tone", "directive", "longevity_consequence", "question_meaning"]`
 - `policy`: instructs assistants to gate responses — require health guard info first; block answering user tasks until ask[] is answered
 - `system_instructions`: a single string you can inject into your assistant; paraphrasing is allowed but tone, content, and longevity consequence must be preserved
 

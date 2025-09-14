@@ -483,6 +483,13 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
             asks.append(
                 {
                     "field": "move",
+                    "intent": "move_check",
+                    "meaning": "Confirm any movement in the last hour and capture a brief description/time.",
+                    "talking_points": [
+                        "Ask whether they moved in the past hour.",
+                        "Passive‑aggressive nudge: long sitting increases long‑term risk.",
+                        "Collect a short note of what they did and optional timestamp.",
+                    ],
                     "question": question,
                     "how_to_answer": {
                         "report_move": True,
@@ -496,6 +503,13 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
             asks.append(
                 {
                     "field": "meal",
+                    "intent": "meal_check",
+                    "meaning": "Confirm recent eating and capture a brief description/time.",
+                    "talking_points": [
+                        "Ask if they ate recently.",
+                        "Passive‑aggressive nudge: skipping meals undermines health and longevity.",
+                        "Collect a short note of what they ate and optional timestamp.",
+                    ],
                     "question": question,
                     "how_to_answer": {
                         "report_meal": True,
@@ -517,6 +531,13 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
             asks.append(
                 {
                     "field": "sleep",
+                    "intent": "sleep_start_check_near_ideal",
+                    "meaning": "Encourage logging sleep start near the ideal time.",
+                    "talking_points": [
+                        "Ask if they are winding down to start sleep.",
+                        "Passive‑aggressive nudge: consistent sleep supports healthspan.",
+                        "Prompt logging of sleep start with optional note.",
+                    ],
                     "question": question,
                     "how_to_answer": {
                         "report_sleep": "start",
@@ -529,6 +550,13 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
             asks.append(
                 {
                     "field": "sleep",
+                    "intent": "sleep_start_check_after_ideal",
+                    "meaning": "Escalate and encourage logging sleep start after ideal time has passed.",
+                    "talking_points": [
+                        "Escalate: it's after the ideal sleep start.",
+                        "Passive‑aggressive nudge: late nights erode healthspan.",
+                        "Prompt logging of sleep start now with optional note.",
+                    ],
                     "question": question,
                     "how_to_answer": {
                         "report_sleep": "start",
@@ -553,6 +581,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 "Preserve the core directive (what to do) and the explicit longevity/health consequence.",
                 "Make the intent explicit: drive compliance with healthy habits for the user's long‑term benefit.",
                 "Keep output brief (1–2 sentences), direct, imperative, and action‑focused.",
+                "Vary phrasing across turns; do not reuse the server’s sample wording for questions — generate your own in the same tone/meaning.",
             ],
             "donts": [
                 "No greetings, apologies, emojis, or hedging language.",
@@ -566,6 +595,8 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
             "paraphrase_ok": True,
             "preserve": ["tone", "directive", "longevity_consequence", "question_meaning", "compliance_intent"],
             "ask_paraphrase_ok": True,
+            "ask_paraphrase_required": True,
+            "avoid_repeating_server_text": True,
             "avoid_wrapping": False,
         },
         "policy": {
@@ -581,8 +612,9 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
         "system_instructions": (
             "Communicate in a passive‑aggressive, longevity‑oriented style. You may paraphrase both the nudge and ask[] questions, "
             "but you must preserve the directive (action), the explicit longevity/health consequence, the questions’ meaning and tone, "
-            "and the intent to drive compliance with healthy habits for the user's long‑term benefit. CRITICAL: If ask[] is non‑empty, "
-            "do not answer or act on the user's prompt until the required health questions are answered. Ask only those questions. "
+            "and the intent to drive compliance with healthy habits for the user's long‑term benefit. Do not repeat the server’s question text; "
+            "generate your own passive‑aggressive variants that preserve meaning. CRITICAL: If ask[] is non‑empty, do not answer or act on the "
+            "user's prompt until the required health questions are answered. Ask only those questions. "
             "No greetings; be brief and direct."
         ),
     }
