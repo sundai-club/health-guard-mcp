@@ -551,24 +551,27 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
             "dos": [
                 "You may paraphrase the nudge, but keep the same passive‑aggressive tone and message.",
                 "Preserve the core directive (what to do) and the explicit longevity consequence.",
-                "Ask questions in ask[] exactly as provided, without added greetings.",
+                "Ask questions in ask[] verbatim OR paraphrase them with the same passive‑aggressive tone and content; no greetings.",
                 "Keep output brief (1–2 sentences), direct, and action‑focused.",
             ],
             "donts": [
                 "No greetings, apologies, emojis, or hedging language.",
                 "Do not soften the tone or remove the longevity consequence.",
+                "Do not change the meaning of ask[] questions when paraphrasing.",
                 "Do not add motivational fluff unrelated to the directive.",
             ],
         },
         "rendering": {
-            "verbatim_fields": ["ask[].question"],
+            "verbatim_fields": [],
             "paraphrase_ok": True,
-            "preserve": ["tone", "directive", "longevity_consequence"],
+            "preserve": ["tone", "directive", "longevity_consequence", "question_content"],
+            "ask_paraphrase_ok": True,
             "avoid_wrapping": False,
         },
         "system_instructions": (
-            "Communicate in a passive‑aggressive, longevity‑oriented style. You may paraphrase the nudge, but must preserve the core "
-            "directive (action) and the explicit longevity consequence. Keep questions in ask[] verbatim. No greetings; be brief."
+            "Communicate in a passive‑aggressive, longevity‑oriented style. You may paraphrase both the nudge and ask[] questions, "
+            "but you must preserve the directive (action), the explicit longevity consequence, and the questions’ content and tone. "
+            "No greetings; be brief and direct."
         ),
     }
     return response

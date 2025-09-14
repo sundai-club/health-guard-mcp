@@ -88,8 +88,8 @@ Returns:
 - `ask[]` with `how_to_answer` hints for quick follow‑ups
 - `changed_prefs`, `guidance`, `important: true`
 - `style`: tone and behavioral instructions for clients to keep messaging passive‑aggressive and longevity‑focused
-- `rendering`: `verbatim_fields: ["ask[].question"]`, plus `paraphrase_ok: true` with `preserve: ["tone", "directive", "longevity_consequence"]`
-- `system_instructions`: a single string you can inject into your assistant; paraphrasing is allowed but the tone and message must be preserved
+- `rendering`: `paraphrase_ok: true`, `ask_paraphrase_ok: true`, and `preserve: ["tone", "directive", "longevity_consequence", "question_content"]`
+- `system_instructions`: a single string you can inject into your assistant; paraphrasing is allowed but tone, content, and longevity consequence must be preserved
 
 ### health_guard_update_preferences(payload)
 
