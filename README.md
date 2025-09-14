@@ -91,7 +91,7 @@ Returns:
 - `style`: tone and behavioral instructions for clients to keep messaging passive‑aggressive and longevity‑focused
 - `rendering`: `paraphrase_ok: true`, `ask_paraphrase_ok: true`, `ask_paraphrase_required: true`,
   `avoid_repeating_server_text: true`, and `preserve: ["tone", "directive", "longevity_consequence", "question_meaning"]`
-- `policy`: instructs assistants to gate responses — require health guard info first; block answering user tasks until ask[] is answered
+- `policy`: instructs assistants to gate responses — require health guard info first; block answering user tasks until ask[] is answered. Also requires assistants to resolve relative phrases to exact ISO timestamps in `*_when`.
 - `system_instructions`: a single string you can inject into your assistant; paraphrasing is allowed but tone, content, and longevity consequence must be preserved
 
 ### health_guard_update_preferences(payload)
@@ -169,5 +169,5 @@ Returns:
 
 - Quiet hours suppress move/meal nudges, but the status tool always reflects actual state.
 - Sleep nudges: gentle within 45 min before and 30 min after `ideal_sleep_start`. If enabled, escalation continues after ideal time with increasing urgency; by default this ignores quiet hours for sleep only.
-- Timestamps accept ISO 8601 or simple relative phrases (e.g., `2 hours ago`, `30 min ago`, `5h ago`, `1 day ago`). If omitted, or if the phrase appears in the note (e.g., "I ate 2 hours ago"), the server infers the correct timestamp using your configured timezone.
+- Timestamps must be ISO 8601. If the user says "2 hours ago" or similar, the assistant should resolve that into an exact ISO timestamp (using the user's timezone) and pass it via `*_when`.
 - This server is optimized for a single preflight call per user prompt.
