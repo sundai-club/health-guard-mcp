@@ -1,4 +1,4 @@
-# Health Hub MCP Server (FastMCP)
+# Health Guard MCP Server (FastMCP)
 
 Minimal Model Context Protocol (MCP) server built with FastMCP that nudges healthy habits (move often, don’t skip meals, sleep well) and keeps a simple local journal.
 
