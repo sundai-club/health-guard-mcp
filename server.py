@@ -525,51 +525,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 }
             )
 
-    # Sleep follow-up near or after ideal time
-    ideal = _hhmm_to_time(prefs.ideal_sleep_start)
-    ideal_dt = now.replace(hour=ideal.hour, minute=ideal.minute, second=0, microsecond=0)
-    last_sleep_start = _last_of("sleep_start", now)
-    missing_today_sleep_start = last_sleep_start is None or last_sleep_start < ideal_dt
-    can_nudge_sleep = (not quiet) or prefs.sleep_escalate_ignore_quiet_hours
-    if can_nudge_sleep and missing_today_sleep_start:
-        if ideal_dt - timedelta(minutes=45) <= now <= ideal_dt + timedelta(minutes=30):
-            question = "Winding down now, or should I pencil in ‘tomorrow’? Consistent sleep is a foundation for long-term health."
-            asks.append(
-                {
-                    "field": "sleep",
-                    "intent": "sleep_start_check_near_ideal",
-                    "meaning": "Encourage logging sleep start near the ideal time.",
-                    "talking_points": [
-                        "Ask if they are winding down to start sleep.",
-                        "Passive‑aggressive nudge: consistent sleep supports healthspan.",
-                        "Prompt logging of sleep start with optional note.",
-                    ],
-                    "question": question,
-                    "how_to_answer": {
-                        "report_sleep": "start",
-                        "sleep_note": "<optional>",
-                    },
-                }
-            )
-        elif now > ideal_dt and prefs.sleep_escalate_after_ideal:
-            question = "Past bedtime — ready to log sleep, or shall we keep pretending? Chronic late nights erode healthspan."
-            asks.append(
-                {
-                    "field": "sleep",
-                    "intent": "sleep_start_check_after_ideal",
-                    "meaning": "Escalate and encourage logging sleep start after ideal time has passed.",
-                    "talking_points": [
-                        "Escalate: it's after the ideal sleep start.",
-                        "Passive‑aggressive nudge: late nights erode healthspan.",
-                        "Prompt logging of sleep start now with optional note.",
-                    ],
-                    "question": question,
-                    "how_to_answer": {
-                        "report_sleep": "start",
-                        "sleep_note": "<optional>",
-                    },
-                }
-            )
+    # Sleep: nudge only. Do not ask to log sleep; sleep timing is treated as fixed.
 
     response: Dict[str, Any] = {
         "ok": True,

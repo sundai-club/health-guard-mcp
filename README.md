@@ -94,6 +94,9 @@ Returns:
 - `policy`: instructs assistants to gate responses — require health guard info first; block answering user tasks until ask[] is answered. Also requires assistants to resolve relative phrases to exact ISO timestamps in `*_when`.
 - `system_instructions`: a single string you can inject into your assistant; paraphrasing is allowed but tone, content, and longevity consequence must be preserved
 
+Sleep logging
+- The server does not ask users to log sleep; it only nudges around the ideal sleep time. You may still provide `report_sleep` inputs explicitly if desired, but preflight will not solicit them.
+
 ### health_guard_update_preferences(payload)
 
 Update stored preferences in a standalone call. Pass only fields you want to change.
