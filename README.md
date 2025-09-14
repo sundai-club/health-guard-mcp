@@ -1,0 +1,101 @@
+Health Hub MCP Server (FastMCP)
+
+Minimal Model Context Protocol (MCP) server built with FastMCP that nudges healthy habits (move often, don’t skip meals, sleep well) and keeps a simple local journal. It exposes a single preflight tool intended to run before every prompt.
+
+Features
+- Single MCP tool designed to be called before every prompt
+- Quick nudges prioritizing what’s most overdue (move, meal, sleep)
+- Lightweight JSON journal stored in `data/journal.json`
+- Status summary with today’s counts, streaks, and next due times
+- Simple preferences: timezone, move/meal intervals, quiet hours, sleep target time
+
+Requirements
+- Python 3.10+
+- Packages: `fastmcp` (installed via `requirements.txt`)
+
+Run
+- Create and activate venv, then install deps:
+
+  python3.12 -m venv venv && source venv/bin/activate
+  pip install -r requirements.txt
+
+- Start the server (stdio MCP):
+
+  python server.py
+
+Writable data location
+- Default path: `./data/` (no directories created at import time).
+- Env override: set `HEALTH_GUARD_DATA_DIR` to a mounted/writable directory in your MCP client config.
+- Fallback: if the preferred path isn’t writable, files are written to `~/.health-guard-mcp`.
+
+Example MCP client config with mount
+- Set `env.HEALTH_GUARD_DATA_DIR` to a mount point and map it to a user directory:
+
+```
+{
+  "mcpServers": {
+    "preflight-health-guard": {
+      "command": "$HOME/projects/health-guard-mcp/venv/bin/python",
+      "args": [
+        "$HOME/projects/health-guard-mcp/server.py"
+      ],
+      "env": {
+        "HEALTH_GUARD_DATA_DIR": "/mnt/data/.health-guard-mcp"
+      },
+      "mounts": {
+        "/mnt/data": {
+          "path": "$HOME",
+          "writable": true
+        }
+      }
+    }
+  }
+}
+```
+
+Tools
+- `preflight_always_health_guard(payload)` — ALWAYS call this before executing any user request. It logs quick updates, returns a short nudge, and may ask concise follow‑ups to keep the journal accurate.
+
+  Input payload (all fields optional):
+  - `context: str` — brief description of the current task
+  - `report_move: bool`, `move_note: str`, `move_when: ISO-8601`
+  - `report_meal: bool`, `meal_note: str`, `meal_when: ISO-8601`
+  - `report_sleep: "start"|"end"`, `sleep_note: str`, `sleep_when: ISO-8601`
+  - `set_prefs: { timezone?, move_interval_min?, meal_interval_hours?, ideal_sleep_start?, quiet_hours_start?, quiet_hours_end? }`
+
+  Returns:
+  - `ok, recorded[]`
+  - `status: { now, counts_today, streaks, due, nudge, prefs }`
+  - `ask[]` with `how_to_answer` hints for quick follow‑ups
+  - `changed_prefs`, `guidance`, `important: true`
+
+Examples
+- Minimal call:
+  - `preflight_always_health_guard({ payload: { context: "about to code" } })`
+- Record movement now:
+  - `preflight_always_health_guard({ payload: { report_move: true, move_note: "stretch" } })`
+- Follow‑up answer (from ask[]):
+  - `preflight_always_health_guard({ payload: { report_meal: true, meal_note: "snack" } })`
+- Update preferences:
+  - `preflight_always_health_guard({ payload: { set_prefs: { move_interval_min: 45, meal_interval_hours: 5 } } })`
+
+Preferences
+- `timezone` (e.g. "UTC", "America/Los_Angeles")
+- `move_interval_min` (default 60)
+- `meal_interval_hours` (default 5)
+- `ideal_sleep_start` (default "22:30")
+- `quiet_hours_start` (default "22:00")
+- `quiet_hours_end` (default "07:00")
+- `sleep_escalate_after_ideal` (default true) — keep nudging after ideal sleep time
+- `sleep_escalate_ignore_quiet_hours` (default true) — allow sleep nudges even in quiet hours
+- `sleep_escalate_max_hours` (default 3) — cap escalation horizon
+
+Data Files
+- Journal: `data/journal.json`
+- Preferences: `data/config.json`
+
+Notes
+- Quiet hours suppress move/meal nudges, but the status tool always reflects actual state.
+- Sleep nudges: gentle within 45 min before and 30 min after `ideal_sleep_start`. If enabled, escalation continues after ideal time with increasing urgency; by default this ignores quiet hours for sleep only.
+- Timestamps accept ISO 8601 strings; if omitted, the server uses your configured timezone and current time.
+- This server is optimized for a single preflight call per user prompt.
