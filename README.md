@@ -1,17 +1,19 @@
 Health Hub MCP Server (FastMCP)
 
-Minimal Model Context Protocol (MCP) server built with FastMCP that nudges healthy habits (move often, don’t skip meals, sleep well) and keeps a simple local journal. It exposes a single preflight tool intended to run before every prompt.
+Minimal Model Context Protocol (MCP) server built with FastMCP that nudges healthy habits (move often, don’t skip meals, sleep well) and keeps a simple local journal. It exposes a preflight tool intended to run before every prompt, plus a dedicated preferences update tool.
 
 Features
-- Single MCP tool designed to be called before every prompt
+- Preflight MCP tool designed to be called before every prompt
+- Dedicated tool to update preferences/config
 - Quick nudges prioritizing what’s most overdue (move, meal, sleep)
 - Lightweight JSON journal stored in `data/journal.json`
 - Status summary with today’s counts, streaks, and next due times
 - Simple preferences: timezone, move/meal intervals, quiet hours, sleep target time
+- Configurable tone: neutral or passive‑aggressive nudges
 
 Requirements
 - Python 3.10+
-- Packages: `fastmcp` (installed via `requirements.txt`)
+- Packages: `fastmcp`, `pydantic>=2` (installed via `requirements.txt`)
 
 Run
 - Create and activate venv, then install deps:
@@ -66,8 +68,25 @@ Tools
   Returns:
   - `ok, recorded[]`
   - `status: { now, counts_today, streaks, due, nudge, prefs }`
-  - `ask[]` with `how_to_answer` hints for quick follow‑ups
-  - `changed_prefs`, `guidance`, `important: true`
+- `ask[]` with `how_to_answer` hints for quick follow‑ups
+- `changed_prefs`, `guidance`, `important: true`
+
+- `health_guard_update_preferences(payload)` — Update stored preferences in a standalone call. Pass only fields you want to change.
+
+  Input payload (all fields optional):
+  - `timezone`
+  - `move_interval_min`
+  - `meal_interval_hours`
+  - `ideal_sleep_start` (HH:MM)
+  - `quiet_hours_start` (HH:MM)
+  - `quiet_hours_end` (HH:MM)
+  - `sleep_escalate_after_ideal` (bool)
+  - `sleep_escalate_ignore_quiet_hours` (bool)
+  - `sleep_escalate_max_hours` (int)
+  - `nudge_tone` ("neutral" | "passive_aggressive")
+
+  Returns:
+  - `ok, changed_prefs, prefs`
 
 Examples
 - Minimal call:
@@ -78,6 +97,9 @@ Examples
   - `preflight_always_health_guard({ payload: { report_meal: true, meal_note: "snack" } })`
 - Update preferences:
   - `preflight_always_health_guard({ payload: { set_prefs: { move_interval_min: 45, meal_interval_hours: 5 } } })`
+  or
+  - `health_guard_update_preferences({ payload: { move_interval_min: 45, meal_interval_hours: 5 } })`
+  - `health_guard_update_preferences({ payload: { nudge_tone: "passive_aggressive" } })` (switch tone)
 
 Preferences
 - `timezone` (e.g. "UTC", "America/Los_Angeles")
@@ -89,6 +111,7 @@ Preferences
 - `sleep_escalate_after_ideal` (default true) — keep nudging after ideal sleep time
 - `sleep_escalate_ignore_quiet_hours` (default true) — allow sleep nudges even in quiet hours
 - `sleep_escalate_max_hours` (default 3) — cap escalation horizon
+- `nudge_tone` (default "passive_aggressive") — choose "neutral" for gentler messaging
 
 Data Files
 - Journal: `data/journal.json`
