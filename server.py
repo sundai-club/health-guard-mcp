@@ -51,6 +51,18 @@ def _parse(dt: str) -> datetime:
         return _now(None)
 
 
+def _parse_iso_or_none(dt: Optional[str]) -> Optional[datetime]:
+    if not dt:
+        return None
+    try:
+        parsed = datetime.fromisoformat(dt)
+        if parsed.tzinfo is None:
+            return parsed.astimezone()
+        return parsed
+    except Exception:
+        return None
+
+
 # Note: We intentionally do not parse natural-language relative times server-side.
 # The client assistant should resolve phrases like "2 hours ago" into exact ISO timestamps
 # in the *_when fields using the user's timezone context, before calling this tool.
@@ -467,13 +479,38 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
     # Record any immediate reports. The client should provide exact ISO timestamps in *_when
     # if the user mentioned a relative time (e.g., "2 hours ago").
     recorded: List[Dict[str, Any]] = []
+    errors: List[Dict[str, Any]] = []
     if payload.report_move:
-        recorded.append(_add_entry("move", payload.move_note or "", prefs, payload.move_when))
+        if payload.move_when and _parse_iso_or_none(payload.move_when) is None:
+            errors.append({
+                "field": "move_when",
+                "code": "invalid_timestamp",
+                "message": "Expected ISO-8601 timestamp. Convert relative phrases (e.g., '2 hours ago') to exact ISO in user's timezone before calling.",
+                "provided": payload.move_when,
+            })
+        else:
+            recorded.append(_add_entry("move", payload.move_note or "", prefs, payload.move_when))
     if payload.report_meal:
-        recorded.append(_add_entry("meal", payload.meal_note or "", prefs, payload.meal_when))
+        if payload.meal_when and _parse_iso_or_none(payload.meal_when) is None:
+            errors.append({
+                "field": "meal_when",
+                "code": "invalid_timestamp",
+                "message": "Expected ISO-8601 timestamp. Convert relative phrases (e.g., '2 hours ago') to exact ISO in user's timezone before calling.",
+                "provided": payload.meal_when,
+            })
+        else:
+            recorded.append(_add_entry("meal", payload.meal_note or "", prefs, payload.meal_when))
     if payload.report_sleep:
         kind = "sleep_start" if payload.report_sleep == "start" else "sleep_end"
-        recorded.append(_add_entry(kind, payload.sleep_note or "", prefs, payload.sleep_when))
+        if payload.sleep_when and _parse_iso_or_none(payload.sleep_when) is None:
+            errors.append({
+                "field": "sleep_when",
+                "code": "invalid_timestamp",
+                "message": "Expected ISO-8601 timestamp. Convert relative phrases to exact ISO in user's timezone before calling.",
+                "provided": payload.sleep_when,
+            })
+        else:
+            recorded.append(_add_entry(kind, payload.sleep_note or "", prefs, payload.sleep_when))
 
     now = _now(prefs.timezone)
     quiet = _in_quiet_hours(now, prefs)
@@ -535,6 +572,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
         "ask": asks,
         "important": True,
         "guidance": "Stand, stretch, hydrate, eat — your future self (and lifespan) will thank you.",
+        "errors": errors or None,
         "style": {
             "tone": "passive_aggressive",
             "rationale": "Firm, longevity‑focused nudges improve compliance and reinforce consequences.",

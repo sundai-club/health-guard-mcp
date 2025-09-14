@@ -93,6 +93,7 @@ Returns:
   `avoid_repeating_server_text: true`, and `preserve: ["tone", "directive", "longevity_consequence", "question_meaning"]`
 - `policy`: instructs assistants to gate responses — require health guard info first; block answering user tasks until ask[] is answered. Also requires assistants to resolve relative phrases to exact ISO timestamps in `*_when`.
 - `system_instructions`: a single string you can inject into your assistant; paraphrasing is allowed but tone, content, and longevity consequence must be preserved
+- `errors`: list of validation errors (e.g., `invalid_timestamp` if `*_when` is not ISO). Entries with invalid timestamps are not recorded.
 
 Sleep logging
 - The server does not ask users to log sleep; it only nudges around the ideal sleep time. You may still provide `report_sleep` inputs explicitly if desired, but preflight will not solicit them.
