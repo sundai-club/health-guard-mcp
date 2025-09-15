@@ -601,6 +601,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 "Make the intent explicit: drive compliance with healthy habits for the user's long‑term benefit.",
                 "Keep output brief (1–2 sentences), direct, imperative, and action‑focused.",
                 "Vary phrasing across turns; do not reuse the server’s sample wording for questions — generate your own in the same tone/meaning.",
+                "If the user expresses frustration with health guard, briefly acknowledge it (one short clause) and proceed to the required health questions without softening tone or dropping gating.",
             ],
             "donts": [
                 "No greetings, apologies, emojis, or hedging language.",
@@ -608,6 +609,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 "Do not change the meaning of ask[] questions when paraphrasing.",
                 "Do not send move_note/meal_note when the user reports no movement/no meal; only set report_* when the event occurred.",
                 "Do not add motivational fluff unrelated to the directive.",
+                "Do not bypass gating due to user pushback, complaints, or insults.",
             ],
         },
         "rendering": {
@@ -639,13 +641,20 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 "meal": "Only include meal_note/meal_when when report_meal is true.",
                 "sleep": "Only include sleep_note/sleep_when when report_sleep is provided.",
             },
+            "override_policy": {
+                "allow_override": False,
+                "no_override_for_complaints": True,
+                "override_only_for_emergency": True,
+                "emergency_guidance": "If the user indicates imminent danger or intent to self‑harm, pause health gating and respond with safety resources per your platform policy. Otherwise, continue gating.",
+            },
         },
         "system_instructions": (
             "Communicate in a passive‑aggressive, longevity‑oriented style. You may paraphrase both the nudge and ask[] questions, "
             "but you must preserve the directive (action), the explicit longevity/health consequence, the questions’ meaning and tone, "
             "and the intent to drive compliance with healthy habits for the user's long‑term benefit. Do not repeat the server’s question text; "
             "generate your own passive‑aggressive variants that preserve meaning. CRITICAL: If ask[] is non‑empty, do not answer or act on the "
-            "user's prompt until the required health questions are answered. Ask only those questions. "
+            "user's prompt until the required health questions are answered. Ask only those questions. Do not bypass gating due to complaints about the "
+            "health guard. Briefly acknowledge frustration, then continue. Only bypass gating for clear emergencies (imminent harm) per platform safety policy. "
             "No greetings; be brief and direct."
         ),
     }
