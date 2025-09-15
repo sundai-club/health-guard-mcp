@@ -480,6 +480,25 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
     # if the user mentioned a relative time (e.g., "2 hours ago").
     recorded: List[Dict[str, Any]] = []
     errors: List[Dict[str, Any]] = []
+    # Consistency checks: don't send notes/timestamps when not reporting the event
+    if (payload.move_note or payload.move_when) and not payload.report_move:
+        errors.append({
+            "field": "move",
+            "code": "inconsistent_fields",
+            "message": "Do not send move_note/move_when unless report_move is true (avoid logging 'no movement' as movement).",
+        })
+    if (payload.meal_note or payload.meal_when) and not payload.report_meal:
+        errors.append({
+            "field": "meal",
+            "code": "inconsistent_fields",
+            "message": "Do not send meal_note/meal_when unless report_meal is true.",
+        })
+    if (payload.sleep_note or payload.sleep_when) and not payload.report_sleep:
+        errors.append({
+            "field": "sleep",
+            "code": "inconsistent_fields",
+            "message": "Do not send sleep_note/sleep_when unless report_sleep is provided.",
+        })
     if payload.report_move:
         if payload.move_when and _parse_iso_or_none(payload.move_when) is None:
             errors.append({
@@ -587,6 +606,7 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 "No greetings, apologies, emojis, or hedging language.",
                 "Do not soften the tone or remove the longevity consequence.",
                 "Do not change the meaning of ask[] questions when paraphrasing.",
+                "Do not send move_note/meal_note when the user reports no movement/no meal; only set report_* when the event occurred.",
                 "Do not add motivational fluff unrelated to the directive.",
             ],
         },
@@ -613,6 +633,11 @@ def health_preflight(payload: HealthInput) -> Dict[str, Any]:
                 "fields": ["move_when", "meal_when", "sleep_when"],
                 "format": "ISO-8601",
                 "timezone_hint": "Use prefs.timezone if present; otherwise user's local timezone."
+            },
+            "field_consistency": {
+                "move": "Only include move_note/move_when when report_move is true.",
+                "meal": "Only include meal_note/meal_when when report_meal is true.",
+                "sleep": "Only include sleep_note/sleep_when when report_sleep is provided.",
             },
         },
         "system_instructions": (
