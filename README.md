@@ -24,6 +24,9 @@ It exposes a preflight tool intended to run before every prompt, plus a dedicate
 Create and activate a virtualenv, then install dependencies:
 
 ```bash
+cd ~/projects
+git clone git@github.com:sundai-club/health-guard-mcp.git
+cd health-guard-mcp
 python3.12 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -54,7 +57,8 @@ Set `env.HEALTH_GUARD_DATA_DIR` to a mount point and map it to a user directory:
         "$HOME/projects/health-guard-mcp/server.py"
       ],
       "env": {
-        "HEALTH_GUARD_DATA_DIR": "/mnt/data/.health-guard-mcp"
+        "HEALTH_GUARD_DATA_DIR": "/mnt/data/.health-guard-mcp",
+        "PYTHONNOUSERSITE": "1"
       },
       "mounts": {
         "/mnt/data": {
